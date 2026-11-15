@@ -1,4 +1,4 @@
-/* The lily bouquet. Everything is sized in vmin so it scales with the screen.
+/* The hand-tied lily bouquet. Everything is sized in vmin so it scales with the screen.
    Each flower's position and size come from the lists in lilies.js. */
 
 .sky,
@@ -10,7 +10,7 @@
 }
 
 .bouquet {
-  --stretch: 1;
+  --lift: 0vmin;
   animation: bouquet-sway 6s ease-in-out infinite alternate;
   transform-origin: 50% 100%;
 }
@@ -19,21 +19,21 @@
 .bouquet__glow {
   position: absolute;
   left: 50%;
-  bottom: calc(60vmin * var(--stretch));
-  width: 112vmin;
-  height: calc(76vmin * var(--stretch));
+  bottom: calc(52vmin + var(--lift));
+  width: 120vmin;
+  height: 96vmin;
   transform: translate(-50%, 50%);
   background: radial-gradient(closest-side, rgba(255, 185, 225, 0.3), rgba(240, 130, 200, 0.12) 62%, transparent);
   animation: fade-in 3s 2s backwards;
 }
 
-/* One SVG unit is 1vmin wide, and the bouquet's base is at (50, 100). */
+/* One SVG unit is 1vmin. The bouquet's base is the bottom centre, (50, 100 + lift). */
 .plant {
   position: absolute;
   left: -50vmin;
   bottom: 0;
   width: 100vmin;
-  height: calc(100vmin * var(--stretch));
+  height: calc(100vmin + var(--lift));
   overflow: visible;
 }
 
@@ -56,11 +56,21 @@
   animation: stem-grow 2.4s ease-out var(--delay) backwards;
 }
 
+.bouquet__fan {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 0;
+  height: 0;
+}
+
 .leaf {
   animation: leaf-grow 1.8s ease-out var(--leaf-delay) backwards;
 }
 
 .leaf__blade { fill: #226e42; }
+.leaf--b .leaf__blade { fill: #2a7a49; }
+.leaf--c .leaf__blade { fill: #17502f; }
 
 .leaf__rib {
   fill: none;
@@ -73,7 +83,7 @@
 .lily__bloom {
   position: absolute;
   left: var(--head-x);
-  bottom: calc(var(--head-y) * var(--stretch));
+  bottom: var(--head-y);
   width: 0;
   height: 0;
   z-index: 3;
@@ -172,8 +182,8 @@
 }
 
 @keyframes lily-sway {
-  from { transform: rotate(-0.7deg); }
-  to { transform: rotate(0.7deg); }
+  from { transform: rotate(-0.35deg); }
+  to { transform: rotate(0.35deg); }
 }
 
 @keyframes stem-grow {
@@ -198,15 +208,11 @@
   to { transform: translate(1.5vmin, -2.5vmin); opacity: 0.95; }
 }
 
-/* Tall, narrow screens: longer stems so the bouquet fills more of the height. */
-@media (max-aspect-ratio: 3/4) {
-  .bouquet { --stretch: 1.4; }
-}
-
-/* Narrow screens have no room for the outermost back lilies. */
-@media (max-aspect-ratio: 5/4) {
-  .lily--edge { display: none; }
-}
+/* After a resize the bouquet is rebuilt in place, so skip the one-time grow animations. */
+.is-settled .bouquet__glow,
+.is-settled .lily__stem,
+.is-settled .leaf,
+.is-settled .lily__bloom { animation: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .opener-hearts { display: none; }

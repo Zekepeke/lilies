@@ -1,6 +1,6 @@
 # lilies
 
-Three animated pink lilies on tall green stems, built with plain HTML, CSS, and JavaScript.
+An animated hand-tied bouquet of nine pink lilies, built with plain HTML, CSS, and JavaScript.
 
 ## Credits
 
@@ -30,7 +30,7 @@ npx sass --watch style.scss style.css
 ## Project layout
 
 - `index.html` - page markup and inline styles
-- `lilies.js` - the list of lilies and their leaves; edit this to rearrange the scene
+- `lilies.js` - the list of lilies (one line each) and the fan of leaves; edit this to rearrange the bouquet
 - `lilies.css` - styles and animation for the lilies
 - `assets/lilies/` - the cut-out flower heads
 - `tools/extract_heads.py` - cuts heads out of a sheet of flowers on black
