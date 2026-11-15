@@ -5,7 +5,7 @@
 
 --crop limits the search to part of the image, and --skip drops any flower
 touching that box (handy for screenshots with UI buttons on top). Heads are
-written to assets/daffodils/head-NN.png, numbered left to right, top to bottom.
+written to assets/lilies/head-NN.png, numbered left to right, top to bottom.
 Needs Pillow, numpy, and scipy.
 """
 import argparse
@@ -15,10 +15,12 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ni
 
-SOLID = 110       # darkest channel above this counts as flower, not glow
+SOLID = 150       # brightest channel above this counts as flower, not glow
+                  # (brightness, not darkest channel: saturated pink petals have a
+                  # low blue or green channel even though they are clearly solid)
 BLACK = 26        # brightness at or below this is background
 MIN_AREA = 0.004  # ignore specks smaller than this fraction of the sheet
-PAD = 14          # glow kept around each head, in source pixels
+PAD = 34          # glow kept around each head, in source pixels
 UPSCALE = 2
 
 
@@ -31,7 +33,7 @@ def main():
     ap.add_argument("sheet")
     ap.add_argument("--crop", type=box)
     ap.add_argument("--skip", type=box)
-    ap.add_argument("--out", default="assets/daffodils")
+    ap.add_argument("--out", default="assets/lilies")
     args = ap.parse_args()
 
     img = Image.open(args.sheet).convert("RGB")
@@ -41,7 +43,7 @@ def main():
         ox, oy = args.crop[:2]
     rgb = np.asarray(img).astype(float)
 
-    solid = ni.binary_opening(rgb.min(axis=2) > SOLID, iterations=2)
+    solid = ni.binary_opening(rgb.max(axis=2) > SOLID, iterations=2)
     labels, count = ni.label(solid)
     min_area = MIN_AREA * solid.size
     keep = [i + 1 for i in range(count) if (labels == i + 1).sum() >= min_area]
@@ -72,7 +74,10 @@ def main():
                 continue
         written += 1
         mine = owner == label
-        body = ni.binary_fill_holes(labels == label)
+        # Close small gaps in the rim first, so curled petals still fill in.
+        body = ni.binary_fill_holes(
+            ni.binary_closing(labels == label, iterations=6, border_value=0)
+        )
         peak = rgb.max(axis=2)
         # Solid inside the flower; outside, brightness becomes transparency so
         # the baked-in glow fades over whatever is behind it.

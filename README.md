@@ -1,11 +1,11 @@
-# daffodils
+# lilies
 
-An animated daffodil bouquet built with plain HTML, CSS, and JavaScript.
+Three animated pink lilies on tall green stems, built with plain HTML, CSS, and JavaScript.
 
 ## Credits
 
 The base flower animation comes from [naveen-kumawat/Flower](https://github.com/naveen-kumawat/Flower).
-This project started as a rose version of it and now grows daffodils instead.
+This project started as a rose version of it, then a daffodil one, and now grows lilies instead.
 
 ## Running locally
 
@@ -30,9 +30,9 @@ npx sass --watch style.scss style.css
 ## Project layout
 
 - `index.html` - page markup and inline styles
-- `daffodils.js` - the list of flowers; edit this to rearrange the bouquet
-- `daffodils.css` - styles and animation for the bouquet
-- `assets/daffodils/` - the cut-out flower heads
+- `lilies.js` - the list of lilies and their leaves; edit this to rearrange the scene
+- `lilies.css` - styles and animation for the lilies
+- `assets/lilies/` - the cut-out flower heads
 - `tools/extract_heads.py` - cuts heads out of a sheet of flowers on black
 - `style.scss` - source styles
 - `style.css` / `style.css.map` - compiled styles
