@@ -7,6 +7,9 @@
 touching that box (handy for screenshots with UI buttons on top). Heads are
 written to assets/lilies/head-NN.png, numbered left to right, top to bottom.
 Needs Pillow, numpy, and scipy.
+
+It also prints each head's visible outline, ignoring the transparent glow around it,
+as the HEAD_OUTLINES table that lilies.js uses to measure the bouquet.
 """
 import argparse
 from pathlib import Path
@@ -22,6 +25,7 @@ BLACK = 26        # brightness at or below this is background
 MIN_AREA = 0.004  # ignore specks smaller than this fraction of the sheet
 PAD = 34          # glow kept around each head, in source pixels
 UPSCALE = 2
+OUTLINE_STEPS = 72  # directions sampled around each head for HEAD_OUTLINES
 
 
 def box(text):
@@ -67,6 +71,7 @@ def main():
         old.unlink()
 
     written = 0
+    outlines = []
     for y0, x0, y1, x1, label in heads:
         if args.skip:
             sx0, sy0, sx1, sy1 = args.skip
@@ -99,7 +104,23 @@ def main():
             (tile.width * UPSCALE, tile.height * UPSCALE), Image.LANCZOS
         ).convert("RGBA")
         tile.save(out / f"head-{written:02d}.png", optimize=True)
+
+        # How far the visible flower reaches from the centre of the tile in each
+        # direction, as a fraction of the tile width. Glow padding is not counted.
+        ys, xs = np.where(body[crop[1]:crop[3], crop[0]:crop[2]])
+        cx, cy = (crop[2] - crop[0]) / 2, (crop[3] - crop[1]) / 2
+        dx, dy = xs + 0.5 - cx, ys + 0.5 - cy
+        step = np.minimum(
+            ((np.degrees(np.arctan2(dy, dx)) % 360) / (360 / OUTLINE_STEPS)).astype(int),
+            OUTLINE_STEPS - 1,
+        )
+        reach = np.zeros(OUTLINE_STEPS)
+        np.maximum.at(reach, step, np.hypot(dx, dy) / (crop[2] - crop[0]))
+        outlines.append(reach)
     print(f"wrote {written} heads to {out}")
+    print(f"HEAD_OUTLINES, {360 // OUTLINE_STEPS} degrees apart, starting at 0 (right), going clockwise:")
+    for reach in outlines:
+        print("  [" + ", ".join(f"{r:.3f}" for r in reach) + "],")
 
 
 if __name__ == "__main__":

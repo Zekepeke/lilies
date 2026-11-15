@@ -1,5 +1,6 @@
-/* The hand-tied lily bouquet. Everything is sized in vmin so it scales with the screen.
-   Each flower's position and size come from the lists in lilies.js. */
+/* The hand-tied lily bouquet. It is drawn in a fixed-size box, measured in design units
+   (--u, set in lilies.js), and the box is scaled as one piece with transform: scale(--s)
+   to fit the screen. Each flower's position and size come from the list in lilies.js. */
 
 .sky,
 .bouquet {
@@ -10,36 +11,67 @@
 }
 
 .bouquet {
-  --lift: 0vmin;
   animation: bouquet-sway 6s ease-in-out infinite alternate;
   transform-origin: 50% 100%;
 }
 
-/* The soft pink haze behind the flowers. */
-.bouquet__glow {
+/* The fixed-size box the whole bouquet is drawn in. --dw and --dh are its size and
+   --x0 is where the base sits from its left edge, all in design units. It is anchored
+   to the bottom centre of the screen and scaled from there. */
+.bouquet__stage {
+  --s: 1;
   position: absolute;
   left: 50%;
-  bottom: calc(52vmin + var(--lift));
-  width: 120vmin;
-  height: 96vmin;
+  bottom: 0;
+  width: calc(var(--dw) * var(--u));
+  height: calc(var(--dh) * var(--u));
+  margin-left: calc(var(--dw) * var(--u) / -2);
+  transform: scale(var(--s));
+  transform-origin: 50% 100%;
+}
+
+/* A point at the base of the bouquet; everything else is placed from it. */
+.bouquet__plane {
+  position: absolute;
+  left: calc(var(--x0) * var(--u));
+  bottom: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The soft pink haze behind the flowers. It moves and scales with the bouquet. */
+.bouquet__glow {
+  position: absolute;
+  left: 0;
+  bottom: calc(52 * var(--u));
+  width: calc(120 * var(--u));
+  height: calc(96 * var(--u));
   transform: translate(-50%, 50%);
   background: radial-gradient(closest-side, rgba(255, 185, 225, 0.3), rgba(240, 130, 200, 0.12) 62%, transparent);
   animation: fade-in 3s 2s backwards;
 }
 
-/* One SVG unit is 1vmin. The bouquet's base is the bottom centre, (50, 100 + lift). */
+/* One SVG unit is one design unit. The bouquet's base is at (50, 100). */
 .plant {
   position: absolute;
-  left: -50vmin;
+  left: calc(-50 * var(--u));
   bottom: 0;
-  width: 100vmin;
-  height: calc(100vmin + var(--lift));
+  width: calc(100 * var(--u));
+  height: calc(100 * var(--u));
   overflow: visible;
+}
+
+.bouquet__fan {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 0;
 }
 
 .lily {
   position: absolute;
-  left: calc(50% + var(--base));
+  left: calc(var(--base) * var(--u));
   bottom: 0;
   width: 0;
   height: 0;
@@ -54,14 +86,6 @@
   stroke-linecap: round;
   stroke-dasharray: 1 2;
   animation: stem-grow 2.4s ease-out var(--delay) backwards;
-}
-
-.bouquet__fan {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 0;
-  height: 0;
 }
 
 .leaf {
@@ -82,8 +106,8 @@
 
 .lily__bloom {
   position: absolute;
-  left: var(--head-x);
-  bottom: var(--head-y);
+  left: calc(var(--head-x) * var(--u));
+  bottom: calc(var(--head-y) * var(--u));
   width: 0;
   height: 0;
   z-index: 3;
@@ -94,10 +118,10 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: var(--size);
+  width: calc(var(--size) * var(--u));
   max-width: none;
   transform: translate(-50%, -50%) rotate(var(--turn)) scaleX(var(--flip));
-  filter: drop-shadow(0 0 1.4vmin rgba(255, 195, 230, 0.55));
+  filter: drop-shadow(0 0 calc(1.4 * var(--u)) rgba(255, 195, 230, 0.55));
 }
 
 /* The back row: darker stems and leaves and slightly dimmed heads, so it reads as farther away. */
@@ -106,7 +130,7 @@
 .lily--back .leaf__rib { stroke: #2b7048; }
 
 .lily--back .lily__head {
-  filter: brightness(0.85) drop-shadow(0 0 1.4vmin rgba(255, 195, 230, 0.4));
+  filter: brightness(0.85) drop-shadow(0 0 calc(1.4 * var(--u)) rgba(255, 195, 230, 0.4));
 }
 
 /* The large out-of-focus lights in the background. */
@@ -207,12 +231,6 @@
   from { transform: translate(-1.5vmin, 2vmin); opacity: 0.45; }
   to { transform: translate(1.5vmin, -2.5vmin); opacity: 0.95; }
 }
-
-/* After a resize the bouquet is rebuilt in place, so skip the one-time grow animations. */
-.is-settled .bouquet__glow,
-.is-settled .lily__stem,
-.is-settled .leaf,
-.is-settled .lily__bloom { animation: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .opener-hearts { display: none; }
