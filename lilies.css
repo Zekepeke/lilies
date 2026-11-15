@@ -90,6 +90,15 @@
   filter: drop-shadow(0 0 1.4vmin rgba(255, 195, 230, 0.55));
 }
 
+/* The back row: darker stems and leaves and slightly dimmed heads, so it reads as farther away. */
+.lily--back .lily__stem { stroke: #246342; }
+.lily--back .leaf__blade { fill: #1a5334; }
+.lily--back .leaf__rib { stroke: #2b7048; }
+
+.lily--back .lily__head {
+  filter: brightness(0.85) drop-shadow(0 0 1.4vmin rgba(255, 195, 230, 0.4));
+}
+
 /* The large out-of-focus lights in the background. */
 .bokeh {
   position: absolute;
@@ -192,6 +201,11 @@
 /* Tall, narrow screens: longer stems so the bouquet fills more of the height. */
 @media (max-aspect-ratio: 3/4) {
   .bouquet { --stretch: 1.4; }
+}
+
+/* Narrow screens have no room for the outermost back lilies. */
+@media (max-aspect-ratio: 5/4) {
+  .lily--edge { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

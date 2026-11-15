@@ -1,20 +1,34 @@
-/* The lilies. Each one stands on its own upright stem. Flowers later in the list
-   sit in front of earlier ones.
+/* The lilies. Each one stands on its own upright stem. Add, move or remove a lily
+   by editing one line.
+   row: "front" or "back". The back row is drawn first, so it sits behind, and is
+        dimmed and darkened to look farther away
    base: where the stem meets the ground, in vmin (from the centre)
    x, y: where the head sits, in vmin (x from the centre, y up from the bottom)
    size: head width in vmin
-   head: image number in assets/lilies
+   head: image number in assets/lilies (1-9)
    turn: head rotation in degrees
    flip: true mirrors the head, so it faces the other way
+   delay: seconds before the stem starts growing; the head blooms 1.8s later
+   edge: true hides the lily on narrow screens, where there is no room for it
    leaves: broad leaves low on the stem, as [height up the stem in vmin,
            side (-1 left, 1 right), length in vmin, angle from upright in degrees] */
 const LILIES = [
-  { base: -29, x: -30, y: 60, size: 29, head: 1, turn: -6,
+  // Front row
+  { row: "front", base: -29, x: -30, y: 60, size: 29, head: 1, turn: -6, delay: 0.7,
     leaves: [[6, -1, 22, 64], [12, 1, 17, 52], [18, -1, 21, 50], [25, 1, 15, 40]] },
-  { base: 29, x: 30, y: 56, size: 28, head: 8, turn: 6,
+  { row: "front", base: 29, x: 30, y: 56, size: 28, head: 8, turn: 6, delay: 1.1,
     leaves: [[5, 1, 22, 64], [11, -1, 17, 52], [17, 1, 21, 50], [24, -1, 15, 40]] },
-  { base: 0, x: 0, y: 74, size: 32, head: 6, turn: 0,
+  { row: "front", base: 0, x: 0, y: 74, size: 32, head: 6, turn: 0, delay: 0.3,
     leaves: [[7, -1, 24, 52], [13, 1, 24, 50], [21, -1, 19, 38], [28, 1, 18, 34]] },
+  // Back row
+  { row: "back", base: -52, x: -53, y: 46, size: 24, head: 3, turn: 11, flip: true, delay: 1.3, edge: true,
+    leaves: [[5, 1, 13, 58], [11, -1, 11, 48]] },
+  { row: "back", base: -20, x: -21, y: 86, size: 24, head: 7, turn: -12, delay: 0.5,
+    leaves: [[6, -1, 14, 56], [13, 1, 12, 46]] },
+  { row: "back", base: 21, x: 21, y: 38, size: 23, head: 4, turn: 8, delay: 0.9,
+    leaves: [[5, 1, 13, 58], [10, -1, 11, 46]] },
+  { row: "back", base: 52, x: 53, y: 70, size: 24, head: 2, turn: -9, flip: true, delay: 1.6, edge: true,
+    leaves: [[6, -1, 14, 56], [13, 1, 12, 46]] },
 ];
 
 /* Background lights: [left %, top %, diameter in vmin, colour]. */
@@ -96,7 +110,7 @@ function stemPath(lily, headX, headY) {
 }
 
 function lilyMarkup(lily, index) {
-  const delay = 0.3 + index * 0.25;
+  const delay = lily.delay;
   const headX = 50 + lily.x - lily.base;
   const headY = 100 - lily.y;
   const leaves = lily.leaves
@@ -104,11 +118,11 @@ function lilyMarkup(lily, index) {
     .join("");
 
   return `
-    <div class="lily" style="
+    <div class="lily lily--${lily.row}${lily.edge ? " lily--edge" : ""}" style="
       --base:${n(lily.base)}vmin; --head-x:${n(lily.x - lily.base)}vmin; --head-y:${lily.y}vmin;
       --size:${lily.size}vmin; --turn:${lily.turn}deg; --flip:${lily.flip ? -1 : 1};
       --delay:${n(delay)}s; --bloom-delay:${n(delay + 1.8)}s;
-      --sway:${n(3.6 + (index % 3) * 0.6)}s; --sway-delay:${n(-index * 0.9)}s;">
+      --sway:${n(3.2 + ((index * 3) % 7) * 0.35)}s; --sway-delay:${n(-index * 1.1)}s;">
       <svg class="plant" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
         <path class="lily__stem" pathLength="1" d="${stemPath(lily, headX, headY)}"/>
         ${leaves}
@@ -125,7 +139,10 @@ document.querySelector(".sky").innerHTML = BOKEH.map(
 ).join("");
 
 document.querySelector(".bouquet").innerHTML =
-  `<div class="bouquet__glow"></div>` + LILIES.map(lilyMarkup).join("");
+  `<div class="bouquet__glow"></div>` + LILIES.map((lily, i) => [lily, i])
+    .sort(([a], [b]) => (a.row === "back" ? 0 : 1) - (b.row === "back" ? 0 : 1))
+    .map(([lily, i]) => lilyMarkup(lily, i))
+    .join("");
 
 
 document.querySelector(".opener-hearts").innerHTML = OPENER_HEARTS.map(
